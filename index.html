@@ -2,668 +2,659 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fotografia de Sucesso - Heineken</title>
-    <!-- Tailwind CSS via CDN para estilização rápida -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOVI Calc - Heineken Brasil</title>
+    
+    <!-- React e ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel para entender JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- html2canvas para gerar a imagem -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- jsPDF para gerar o PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <style>
-        /* Estilos personalizados para garantir aparência de App Nativo */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f3f4f6;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        /* Esconder scrollbar mas permitir rolagem */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-
-        /* Custom Scrollbar para lista de SKUs */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 4px;
-        }
-
-        /* Animações suaves */
-        .fade-in {
-            animation: fadeIn 0.3s ease-in-out;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Cores Heineken */
-        .bg-heineken { background-color: #008200; }
-        .text-heineken { color: #008200; }
-        .border-heineken { border-color: #008200; }
-        .focus-ring-heineken:focus { --tw-ring-color: #008200; }
+        body { -webkit-font-smoothing: antialiased; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="pb-32">
+<body class="bg-gray-50">
+    <div id="root"></div>
 
-    <!-- Header Fixo -->
-    <header class="bg-heineken text-white shadow-lg sticky top-0 z-50">
-        <div class="max-w-md mx-auto px-4 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <div class="bg-red-600 p-1.5 rounded-full shadow-sm border border-white/20 flex items-center justify-center w-6 h-6">
-                         <span class="text-white text-xs font-bold">★</span>
-                    </div>
-                    <div>
-                        <h1 class="text-lg font-bold leading-none">Fotografia de Sucesso</h1>
-                        <p class="text-[10px] opacity-80 font-medium tracking-wider mt-1">MIX COMPLETO</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
 
-    <main class="max-w-md mx-auto px-4 mt-6">
-        
-        <!-- Notificações -->
-        <div id="notification" class="hidden mb-4 p-3 rounded-lg text-sm text-center font-medium shadow-sm border transition-all duration-300"></div>
+        // --- ÍCONES SVG ---
+        const IconBase = ({ children, className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                {children}
+            </svg>
+        );
 
-        <!-- Input Card Principal -->
-        <div class="bg-white rounded-xl shadow-md overflow-hidden mb-6 border border-gray-100">
-            <!-- Nome da Loja -->
-            <div class="p-4 bg-gray-50 border-b border-gray-100">
-                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Ponto de Venda</label>
-                <div class="relative">
-                    <i data-lucide="store" class="absolute left-3 top-3 text-gray-400 w-4 h-4"></i>
-                    <input
-                        type="text"
-                        id="storeName"
-                        placeholder="Nome do Supermercado / Bar"
-                        class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:outline-none transition-all text-gray-800 placeholder-gray-400"
-                    />
-                </div>
-            </div>
+        const Star = ({ size = 24, className = "" }) => (
+            <IconBase className={className} width={size} height={size}>
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </IconBase>
+        );
+        const RefreshCw = ({ size = 24, className = "" }) => (
+            <IconBase className={className} width={size} height={size}>
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+                <path d="M21 3v5h-5"></path>
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+                <path d="M8 16H3v5"></path>
+            </IconBase>
+        );
+        const ChevronDown = ({ size = 24, className = "" }) => (
+            <IconBase className={className} width={size} height={size}><polyline points="6 9 12 15 18 9"></polyline></IconBase>
+        );
+        const ChevronUp = ({ size = 24, className = "" }) => (
+            <IconBase className={className} width={size} height={size}><polyline points="18 15 12 9 6 15"></polyline></IconBase>
+        );
+        const CheckCircle = ({ size = 24, className = "" }) => (
+            <IconBase className={className} width={size} height={size}>
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </IconBase>
+        );
+        const AlertCircle = ({ size = 24, className = "" }) => (
+            <IconBase className={className} width={size} height={size}>
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </IconBase>
+        );
+        const Globe = ({ size = 24, className = "" }) => (
+            <IconBase className={className} width={size} height={size}>
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </IconBase>
+        );
+        const TrendingUp = ({ size = 24, className = "" }) => (
+            <IconBase className={className} width={size} height={size}>
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                <polyline points="17 6 23 6 23 12"></polyline>
+            </IconBase>
+        );
+        const AlertTriangle = ({ size = 24, className = "" }) => (
+            <IconBase className={className} width={size} height={size}>
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </IconBase>
+        );
+        const ImageIcon = ({ size = 24, className = "" }) => (
+            <IconBase className={className} width={size} height={size}>
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+            </IconBase>
+        );
+        const ArrowRight = ({ size = 24, className = "" }) => (
+            <IconBase className={className} width={size} height={size}>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+            </IconBase>
+        );
 
-            <!-- Abas de Categoria -->
-            <div class="flex border-b border-gray-200 bg-white sticky top-0 overflow-x-auto no-scrollbar" id="tabsContainer">
-                <!-- Abas geradas via JS -->
-            </div>
-
-            <!-- Conteúdo da Aba Ativa -->
-            <div class="p-5">
-                <div class="mb-4">
-                    <div class="flex justify-between items-center mb-2">
-                        <h3 id="categoryTitle" class="text-lg font-bold text-heineken transition-colors">Premium</h3>
-                        <span id="categoryMeta" class="text-xs font-medium bg-gray-100 px-2 py-1 rounded-full text-gray-600 border border-gray-200">Meta: 57%</span>
-                    </div>
-                    
-                    <!-- Lista de SKUs (Mix Completo) -->
-                    <div class="mb-5">
-                        <p class="text-[10px] text-gray-400 uppercase font-bold mb-2">Produtos desta Categoria:</p>
-                        <div id="skuList" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto pr-1 custom-scrollbar">
-                            <!-- SKUs gerados via JS -->
-                        </div>
-                    </div>
-
-                    <!-- Inputs de Medição -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Grupo Heineken (cm)</label>
-                            <input
-                                type="number"
-                                inputmode="decimal"
-                                id="inputHeineken"
-                                placeholder="0"
-                                class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none font-mono text-lg transition-all"
-                            />
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Concorrência (cm)</label>
-                            <input
-                                type="number"
-                                inputmode="decimal"
-                                id="inputCompetitor"
-                                placeholder="0"
-                                class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:outline-none font-mono text-lg transition-all"
-                            />
-                        </div>
-                    </div>
-
-                    <!-- Feedback Visual Instantâneo -->
-                    <div id="instantFeedback" class="hidden mt-4 p-3 bg-gray-50 rounded-lg border border-gray-100 flex justify-between items-center fade-in">
-                       <span class="text-xs text-gray-500 font-medium">Share Atual Calculado:</span>
-                       <span id="calculatedShareDisplay" class="text-xl font-bold">0%</span>
-                    </div>
-                </div>
-                
-            </div>
-        </div>
-
-        <!-- Botões de Ação -->
-        <div class="grid grid-cols-2 gap-3 mb-8">
-            <button
-                onclick="downloadCSV()"
-                id="btnDownload"
-                class="flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium shadow-sm border text-sm transition-colors bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
-                disabled
-            >
-                <i data-lucide="download" class="w-4 h-4"></i>
-                Baixar Relatório
-            </button>
-            
-            <button
-                onclick="clearHistory()"
-                id="btnClear"
-                class="flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium shadow-sm border text-sm transition-colors bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
-                disabled
-            >
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                Limpar
-            </button>
-        </div>
-
-        <!-- Lista de Histórico -->
-        <div class="space-y-4">
-            <div class="flex items-center justify-between px-1 mb-2">
-                 <h3 class="text-gray-700 font-bold flex items-center gap-2 text-sm uppercase tracking-wide">
-                   <i data-lucide="history" class="w-4 h-4"></i> Histórico Recente
-                 </h3>
-                 <span id="historyCount" class="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">0</span>
-            </div>
-
-            <div id="historyList" class="space-y-4">
-                <!-- Lista vazia -->
-                <div class="text-center py-12 bg-white rounded-xl shadow-sm border border-dashed border-gray-300">
-                    <i data-lucide="bar-chart-3" class="w-8 h-8 text-gray-300 mx-auto mb-2"></i>
-                    <p class="text-gray-400 text-sm">Nenhuma medição registrada.</p>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Barra Fixa Inferior -->
-    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-40 px-4 py-3 safe-area-pb">
-        <div class="max-w-md mx-auto">
-            <!-- Resumo Global -->
-            <div class="flex justify-between items-center mb-3 px-1">
-                <span class="text-xs font-bold text-gray-500 uppercase tracking-wide">Share Loja Total</span>
-                <div class="flex items-center gap-2">
-                    <span id="globalTotalShare" class="text-2xl font-black text-gray-300">0%</span>
-                </div>
-            </div>
-            
-            <div class="flex gap-2">
-                <button
-                    onclick="handleSave()"
-                    class="flex-1 bg-heineken hover:bg-green-800 text-white font-bold py-3 rounded-lg shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-                >
-                    <i data-lucide="save" class="w-5 h-5"></i>
-                    Registrar Loja
-                </button>
-                 <button
-                    onclick="resetDraft()"
-                    class="px-3 bg-gray-100 hover:bg-gray-200 text-gray-500 rounded-lg transition-colors"
-                    title="Limpar Rascunho"
-                >
-                    <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // --- CONFIGURAÇÃO E DADOS ---
-        const categoriesConfig = {
+        // --- DADOS E LÓGICA ---
+        const CATEGORIES = {
             premium: {
-                key: 'premium',
-                label: 'Premium',
-                meta: 57,
-                colorClass: 'text-heineken',
-                dotColor: 'bg-heineken',
-                focusRing: 'focus:ring-green-500',
-                skus: ['Heineken Original (Lata/Long/600ml)', 'Heineken 0.0', 'Heineken Keg 5L', 'Sol Premium', 'Sol Mexicana']
+                title: "Premium",
+                target: 57,
+                color: "bg-green-100 border-green-200",
+                headerColor: "bg-[#008200] text-white",
+                products: [
+                    "Heineken Original",
+                    "Heineken 0.0",
+                    "Eisenbahn Pilsen",
+                    "Eisenbahn Unfiltered",
+                    "Amstel Ultra",
+                    "Sol",
+                    "Sol 0.0",
+                    "Praya Lager"
+                ]
             },
             craft: {
-                key: 'craft',
-                label: 'Craft (Artesanais)',
-                meta: 53,
-                colorClass: 'text-amber-600',
-                dotColor: 'bg-amber-600',
-                focusRing: 'focus:ring-amber-500',
-                skus: ['Eisenbahn Pilsen', 'Eisenbahn Unfiltered', 'Eisenbahn IPA', 'Eisenbahn Pale Ale', 'Eisenbahn Session IPA', 'Eisenbahn Weizen', 'Baden Baden Cristal', 'Baden Baden Witbier', 'Baden Baden Golden', 'Baden Baden IPA', 'Lagunitas IPA', 'Blue Moon']
+                title: "Craft (Artesanais)",
+                target: 53,
+                color: "bg-amber-50 border-amber-200",
+                headerColor: "bg-amber-600 text-white",
+                products: [
+                    "Eisenbahn (Estilos)",
+                    "Baden Baden (Estilos)",
+                    "Praya Clássica",
+                    "Lagunitas",
+                    "Blue Moon"
+                ]
             },
             mainstream: {
-                key: 'mainstream',
-                label: 'Mainstream',
-                meta: 25,
-                colorClass: 'text-yellow-600',
-                dotColor: 'bg-yellow-500',
-                focusRing: 'focus:ring-yellow-400',
-                skus: ['Amstel Lager', 'Amstel Ultra', 'Devassa Puro Malte', 'Tiger', 'Amstel Vibe/Spirit']
+                title: "Mainstream",
+                target: 25,
+                color: "bg-blue-50 border-blue-200",
+                headerColor: "bg-blue-600 text-white",
+                products: [
+                    "Amstel",
+                    "Devassa",
+                    "Tiger"
+                ]
             },
             economy: {
-                key: 'economy',
-                label: 'Economy',
-                meta: 15,
-                colorClass: 'text-gray-600',
-                dotColor: 'bg-gray-500',
-                focusRing: 'focus:ring-gray-400',
-                skus: ['Kaiser', 'Bavaria', 'Schin', 'Glacial', 'No Grau']
+                title: "Economy",
+                target: null,
+                color: "bg-gray-50 border-gray-200",
+                headerColor: "bg-gray-500 text-white",
+                products: [
+                    "Kaiser",
+                    "Glacial",
+                    "Bavária",
+                    "Schin"
+                ]
+            },
+            nab: {
+                title: "Nab",
+                target: null,
+                color: "bg-teal-50 border-teal-200",
+                headerColor: "bg-teal-600 text-white",
+                products: [
+                    "Fys Tônica",
+                    "Fys: Sabores",
+                    "Clash'd",
+                    "Mamba Water",
+                    "Baer-Mate",
+                    "Baer-Matcha"
+                ]
+            },
+            rtd: {
+                title: "RTD",
+                target: null,
+                color: "bg-purple-50 border-purple-200",
+                headerColor: "bg-purple-600 text-white",
+                products: [
+                    "Amstel Vibes"
+                ]
             }
         };
 
-        // Estado Global
-        let activeTab = 'premium';
-        let measurements = {
-            premium: { heineken: '', competitor: '' },
-            craft: { heineken: '', competitor: '' },
-            mainstream: { heineken: '', competitor: '' },
-            economy: { heineken: '', competitor: '' }
-        };
-        let history = [];
-
-        // --- INICIALIZAÇÃO ---
-        document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-            loadDraft(); // Carregar rascunho antes de renderizar
-            renderTabs();
-            renderCategoryContent();
-            loadHistoryFromStorage();
-            updateGlobalTotal(); // Atualizar total inicial
-            
-            // Listener global para o nome da loja
-            document.getElementById('storeName').addEventListener('input', (e) => {
-                saveDraft();
-            });
-        });
-
-        // --- RENDERIZAÇÃO ---
-        function renderTabs() {
-            const container = document.getElementById('tabsContainer');
-            container.innerHTML = '';
-            
-            Object.values(categoriesConfig).forEach(cat => {
-                const isActive = activeTab === cat.key;
-                const btn = document.createElement('button');
-                btn.className = `flex-1 py-3 px-2 text-xs font-bold uppercase tracking-wide transition-colors border-b-2 whitespace-nowrap min-w-[80px] ${isActive ? 'border-heineken text-heineken bg-green-50/50' : 'border-transparent text-gray-400 hover:text-gray-600'}`;
-                btn.textContent = cat.label.split(' ')[0];
-                btn.onclick = () => switchTab(cat.key);
-                container.appendChild(btn);
-            });
-        }
-
-        function renderCategoryContent() {
-            const config = categoriesConfig[activeTab];
-            const data = measurements[activeTab];
-
-            // Título e Meta
-            const titleEl = document.getElementById('categoryTitle');
-            titleEl.textContent = config.label;
-            titleEl.className = `text-lg font-bold transition-colors ${config.colorClass}`;
-            
-            document.getElementById('categoryMeta').textContent = `Meta: ${config.meta}%`;
-
-            // SKUs
-            const skuList = document.getElementById('skuList');
-            skuList.innerHTML = '';
-            config.skus.forEach(sku => {
-                const span = document.createElement('span');
-                span.className = 'text-[10px] bg-gray-50 text-gray-600 px-2 py-1 rounded border border-gray-200 hover:border-gray-300 transition-colors cursor-default';
-                span.textContent = sku;
-                skuList.appendChild(span);
-            });
-
-            // Inputs
-            const inputH = document.getElementById('inputHeineken');
-            const inputC = document.getElementById('inputCompetitor');
-            
-            // Remover classes de foco antigas e adicionar novas
-            inputH.className = inputH.className.replace(/focus:ring-\w+-\d+/g, config.focusRing);
-            
-            inputH.value = data.heineken;
-            inputC.value = data.competitor;
-
-            // Listeners para inputs
-            inputH.oninput = (e) => updateMeasurement('heineken', e.target.value);
-            inputC.oninput = (e) => updateMeasurement('competitor', e.target.value);
-
-            updateFeedback();
-        }
-
-        function switchTab(key) {
-            activeTab = key;
-            renderTabs();
-            renderCategoryContent();
-        }
-
-        function updateMeasurement(type, value) {
-            measurements[activeTab][type] = value;
-            saveDraft(); // Salvar a cada input
-            updateFeedback();
-            updateGlobalTotal();
-        }
-
-        function updateFeedback() {
-            const h = parseFloat(measurements[activeTab].heineken) || 0;
-            const c = parseFloat(measurements[activeTab].competitor) || 0;
-            const total = h + c;
-            
-            const feedbackEl = document.getElementById('instantFeedback');
-            const shareDisplay = document.getElementById('calculatedShareDisplay');
-
-            if (h > 0 || c > 0) {
-                feedbackEl.classList.remove('hidden');
-                const share = total === 0 ? 0 : ((h / total) * 100).toFixed(1);
-                const meta = categoriesConfig[activeTab].meta;
-                
-                shareDisplay.textContent = `${share}%`;
-                shareDisplay.className = `text-xl font-bold ${parseFloat(share) >= meta ? 'text-green-600' : 'text-red-500'}`;
-            } else {
-                feedbackEl.classList.add('hidden');
-            }
-        }
-
-        function updateGlobalTotal() {
-            let totalHeineken = 0;
-            let totalCompetitor = 0;
-
-            Object.values(measurements).forEach(m => {
-                totalHeineken += parseFloat(m.heineken) || 0;
-                totalCompetitor += parseFloat(m.competitor) || 0;
-            });
-
-            const totalSpace = totalHeineken + totalCompetitor;
-            const globalShare = totalSpace === 0 ? 0 : ((totalHeineken / totalSpace) * 100).toFixed(1);
-            
-            const el = document.getElementById('globalTotalShare');
-            el.textContent = `${globalShare}%`;
-            
-            // Cor dinâmica baseada em uma "meta geral" fictícia ou apenas visual
-            // Vamos usar 30% como base de "bom" para a loja toda, ou apenas cinza/verde
-            if (totalSpace > 0) {
-                el.className = `text-2xl font-black transition-colors ${parseFloat(globalShare) >= 30 ? 'text-heineken' : 'text-gray-800'}`;
-            } else {
-                el.className = 'text-2xl font-black text-gray-300';
-            }
-        }
-
-        // --- LÓGICA DE NEGÓCIO ---
-
-        function handleSave() {
-            const storeName = document.getElementById('storeName').value.trim();
-
-            if (!storeName) {
-                showNotification('Por favor, insira o nome da loja.', 'error');
-                return;
-            }
-
-            const hasData = Object.values(measurements).some(m => 
-                (parseFloat(m.heineken) > 0 || parseFloat(m.competitor) > 0)
-            );
-
-            if (!hasData) {
-                showNotification('Preencha os dados de pelo menos uma categoria.', 'error');
-                return;
-            }
-
-            const report = {
-                id: Date.now(),
-                date: new Date().toLocaleDateString('pt-BR'),
-                time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-                storeName: storeName,
-                data: {},
-                totalShare: 0
-            };
-
-            let totalHeinekenCm = 0;
-            let totalCompetitorCm = 0;
-
-            Object.keys(categoriesConfig).forEach(key => {
-                const h = parseFloat(measurements[key].heineken) || 0;
-                const c = parseFloat(measurements[key].competitor) || 0;
-                const t = h + c;
-                const share = t === 0 ? 0 : ((h / t) * 100).toFixed(1);
-
-                report.data[key] = {
-                    heinekenCm: h,
-                    competitorCm: c,
-                    share: share,
-                    metaReached: parseFloat(share) >= categoriesConfig[key].meta
-                };
-
-                totalHeinekenCm += h;
-                totalCompetitorCm += c;
-            });
-
-            const totalSpace = totalHeinekenCm + totalCompetitorCm;
-            report.totalShare = totalSpace === 0 ? 0 : ((totalHeinekenCm / totalSpace) * 100).toFixed(1);
-
-            history.unshift(report); // Adiciona no início
-            saveHistoryToStorage();
-            renderHistory();
-            
-            // Reset
-            document.getElementById('storeName').value = '';
-            Object.keys(measurements).forEach(k => measurements[k] = { heineken: '', competitor: '' });
-            switchTab('premium'); // Volta para a primeira aba e limpa inputs visuais
-            
-            showNotification('Loja registrada com sucesso!', 'success');
-            
-            // Limpar rascunho após salvar com sucesso
-            localStorage.removeItem('heineken_sos_draft');
-            updateGlobalTotal();
-        }
-
-        // --- GESTÃO DE HISTÓRICO ---
-
-        function renderHistory() {
-            const list = document.getElementById('historyList');
-            const count = document.getElementById('historyCount');
-            const btnDown = document.getElementById('btnDownload');
-            const btnClear = document.getElementById('btnClear');
-
-            count.textContent = history.length;
-
-            // Habilitar/Desabilitar botões
-            if (history.length > 0) {
-                btnDown.disabled = false;
-                btnDown.className = btnDown.className.replace('bg-gray-100 text-gray-400 cursor-not-allowed', 'bg-white text-gray-700 hover:bg-gray-50 cursor-pointer');
-                
-                btnClear.disabled = false;
-                btnClear.className = btnClear.className.replace('bg-gray-100 text-gray-400 cursor-not-allowed', 'bg-white text-red-600 hover:bg-red-50 cursor-pointer');
-                
-                list.innerHTML = '';
-            } else {
-                // Estado vazio
-                btnDown.disabled = true;
-                btnDown.className = 'flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium shadow-sm border text-sm transition-colors bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed';
-                
-                btnClear.disabled = true;
-                btnClear.className = 'flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium shadow-sm border text-sm transition-colors bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed';
-                
-                list.innerHTML = `
-                <div class="text-center py-12 bg-white rounded-xl shadow-sm border border-dashed border-gray-300">
-                    <i data-lucide="bar-chart-3" class="w-8 h-8 text-gray-300 mx-auto mb-2"></i>
-                    <p class="text-gray-400 text-sm">Nenhuma medição registrada.</p>
-                </div>`;
-                lucide.createIcons();
-                return;
-            }
-
-            history.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden fade-in';
-                
-                // Header do Card
-                let cardHTML = `
-                <div class="bg-gray-50 px-4 py-3 border-b border-gray-100 flex justify-between items-center">
-                    <div>
-                        <h4 class="font-bold text-gray-800">${item.storeName}</h4>
-                        <p class="text-[10px] text-gray-500">${item.date} às ${item.time}</p>
+        const ProductInput = ({ name, value, onChange, share, totalShelf }) => {
+            return (
+                <div className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+                    <div className="w-1/2 pr-2">
+                        <span className="text-sm font-medium text-gray-700 block">{name}</span>
+                        <span className="text-[10px] text-gray-400">
+                            Share: <strong>{totalShelf > 0 ? share : '0.0'}%</strong>
+                        </span>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <div class="text-right">
-                           <span class="block text-[10px] text-gray-500 uppercase">Share Total</span>
-                           <span class="font-bold text-gray-800">${item.totalShare}%</span>
-                        </div>
-                        <button onclick="deleteItem(${item.id})" class="text-gray-400 hover:text-red-500">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
+                    <div className="w-1/2 flex items-center gap-3 justify-end">
+                        <input
+                            type="number"
+                            value={value}
+                            onChange={(e) => onChange(e.target.value)}
+                            placeholder="0"
+                            className="w-20 p-2 text-right bg-white border border-gray-300 rounded text-sm focus:ring-1 focus:ring-[#008200] focus:border-[#008200] outline-none transition-all"
+                        />
+                        <span className="text-xs text-gray-400 w-4">cm</span>
                     </div>
                 </div>
-                <div class="p-3 grid grid-cols-1 gap-2">`;
+            );
+        };
 
-                // Linhas das Categorias
-                Object.keys(categoriesConfig).forEach(key => {
-                    const catData = item.data[key];
-                    if (catData.heinekenCm == 0 && catData.competitorCm == 0) return;
+        const CategorySection = ({ categoryKey, config, values, onUpdateWorld, onUpdateProduct }) => {
+            const [isOpen, setIsOpen] = useState(true);
 
-                    const config = categoriesConfig[key];
-                    const iconColor = catData.metaReached ? 'text-green-600' : 'text-red-500';
-                    const icon = catData.metaReached ? 'check-circle-2' : 'alert-circle';
+            const worldCm = values.world;
+            const productValues = values.products;
+            const totalShelf = parseFloat(worldCm) || 0;
+            
+            const hnkTotalVal = config.products.reduce((acc, prod) => {
+                return acc + (parseFloat(productValues[prod]) || 0);
+            }, 0);
 
-                    cardHTML += `
-                    <div class="flex items-center justify-between text-sm py-1 border-b border-gray-50 last:border-0">
-                        <div class="flex items-center gap-2">
-                            <div class="w-2 h-2 rounded-full ${config.dotColor}"></div>
-                            <span class="text-gray-600 font-medium">${config.label.split(' ')[0]}</span>
+            const isError = hnkTotalVal > totalShelf && totalShelf > 0;
+            const totalShare = totalShelf > 0 ? ((hnkTotalVal / totalShelf) * 100).toFixed(1) : 0;
+            const isTargetMet = config.target ? parseFloat(totalShare) >= config.target : true;
+
+            return (
+                <div className="mb-6 bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+                    <div 
+                        className="bg-[#008200] p-4 flex justify-between items-center text-white cursor-pointer"
+                        onClick={() => setIsOpen(!isOpen)}
+                    >
+                        <div className="flex items-center gap-2">
+                            <Star className="w-5 h-5 text-red-500 fill-current" />
+                            <h2 className="text-lg font-bold uppercase tracking-wider">{config.title}</h2>
                         </div>
-                        <div class="flex items-center gap-3">
-                           <span class="text-xs text-gray-400">Meta: ${config.meta}%</span>
-                           <div class="flex items-center gap-1 font-bold ${iconColor}">
-                             ${catData.share}%
-                             <i data-lucide="${icon}" class="w-3.5 h-3.5"></i>
-                           </div>
+                        <div className="flex items-center gap-3">
+                            {config.target !== null && (
+                                <span className="text-xs font-semibold bg-white/20 px-2 py-1 rounded">
+                                    META: {config.target}%
+                                </span>
+                            )}
+                            {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                         </div>
-                    </div>`;
-                });
+                    </div>
 
-                cardHTML += </div>;
-                card.innerHTML = cardHTML;
-                list.appendChild(card);
+                    {isOpen && (
+                        <div className="p-4">
+                            <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mb-6">
+                                <div className="flex justify-between items-center mb-2">
+                                    <label className="text-xs font-bold text-blue-800 uppercase flex items-center gap-1">
+                                        <Globe size={14} />
+                                        Espaço Total da Categoria (Mundo)
+                                    </label>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="number"
+                                        value={worldCm}
+                                        onChange={(e) => onUpdateWorld(e.target.value)}
+                                        placeholder="Total da gôndola em cm"
+                                        className="w-full p-3 text-lg bg-white border border-blue-200 rounded text-gray-800 focus:ring-2 focus:ring-blue-500 outline-none"
+                                    />
+                                    <span className="font-bold text-blue-300">cm</span>
+                                </div>
+                            </div>
+
+                            <div className="mb-6">
+                                <h3 className="text-xs font-bold text-gray-400 uppercase mb-3 pl-1">Nossos Produtos (cm)</h3>
+                                <div className={`bg-gray-50 rounded-lg p-2 border ${isError ? 'border-red-300' : 'border-gray-200'}`}>
+                                    {config.products.map((prod, idx) => {
+                                        const val = parseFloat(productValues[prod]) || 0;
+                                        const share = totalShelf > 0 ? ((val / totalShelf) * 100).toFixed(1) : 0;
+                                        
+                                        return (
+                                            <ProductInput 
+                                                key={idx}
+                                                name={prod}
+                                                value={productValues[prod] || ''}
+                                                onChange={(val) => onUpdateProduct(prod, val)}
+                                                share={share}
+                                                totalShelf={totalShelf}
+                                            />
+                                        );
+                                    })}
+                                </div>
+                                {isError && (
+                                    <div className="flex items-center gap-1 text-red-500 text-xs mt-1 pl-1">
+                                        <AlertTriangle size={12} />
+                                        <span>Atenção: A soma dos produtos excede o total do mundo!</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="border-t-2 border-dashed border-gray-200 pt-4">
+                                <div className="flex justify-between items-end">
+                                    <div>
+                                        <span className="text-sm font-bold text-gray-500 block">SHARE TOTAL</span>
+                                        <span className="text-xs text-gray-400">
+                                            (Nossos: {hnkTotalVal}cm / Mundo: {totalShelf}cm)
+                                        </span>
+                                    </div>
+                                    <div className={`text-4xl font-bold ${isTargetMet ? 'text-[#008200]' : 'text-red-500'}`}>
+                                        {totalShare}%
+                                    </div>
+                                </div>
+                                {config.target && totalShelf > 0 && (
+                                    <div className={`mt-3 p-2 rounded flex items-center justify-center gap-2 text-sm font-bold ${isTargetMet ? 'bg-green-100 text-[#008200]' : 'bg-red-100 text-red-600'}`}>
+                                        {isTargetMet ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
+                                        {isTargetMet ? `META DE ${config.target}% ATINGIDA` : `ABAIXO DA META DE ${config.target}%`}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const ReportTable = ({ allData, globalData, date, time, storeName, fds }) => {
+            return (
+                <div className="bg-white p-6 w-[800px] font-sans text-gray-800 border border-gray-300">
+                    <div className="border-b-4 border-[#008200] pb-4 mb-6 flex justify-between items-end">
+                        <div>
+                            <h1 className="text-3xl font-bold text-[#008200] uppercase tracking-tighter">Relatório de Execução SOVI</h1>
+                            <p className="text-sm text-gray-500 font-semibold mt-1">HEINEKEN BRASIL - EXECUÇÃO PERFEITA</p>
+                        </div>
+                        <div className="text-right text-sm text-gray-500">
+                            <p>{date}</p>
+                            <p>{time}</p>
+                        </div>
+                    </div>
+
+                    <div className="mb-6 grid grid-cols-2 gap-4">
+                        <div className="bg-gray-50 p-3 rounded border border-gray-200">
+                            <span className="text-xs font-bold text-gray-500 uppercase block">Loja</span>
+                            <span className="text-lg font-bold text-gray-800">{storeName || '-'}</span>
+                        </div>
+                        <div className="bg-gray-50 p-3 rounded border border-gray-200">
+                            <span className="text-xs font-bold text-gray-500 uppercase block">FDS da Loja</span>
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-lg font-bold text-gray-800">{fds || '-'}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-6">
+                        {Object.entries(CATEGORIES).map(([key, config]) => {
+                            const catData = allData[key];
+                            const worldCm = parseFloat(catData.world) || 0;
+                            const productValues = catData.products;
+                            
+                            let catTotalHnk = 0;
+                            config.products.forEach(p => catTotalHnk += (parseFloat(productValues[p]) || 0));
+                            
+                            const catShare = worldCm > 0 ? ((catTotalHnk / worldCm) * 100).toFixed(1) : 0;
+                            const isMet = config.target ? parseFloat(catShare) >= config.target : true;
+
+                            return (
+                                <div key={key} className="border border-gray-400">
+                                    <div className={`${config.headerColor} p-3 flex justify-between items-center font-bold uppercase`}>
+                                        <span className="text-lg">{config.title}</span>
+                                        <div className="flex gap-6 text-sm">
+                                            {config.target && <span>Meta: {config.target}%</span>}
+                                            <span>Atingido: {catShare}%</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <table className="w-full text-sm">
+                                        <thead>
+                                            <tr className="bg-gray-100 border-b border-gray-300 text-gray-600">
+                                                <th className="p-3 text-left w-1/2">Produto</th>
+                                                <th className="p-3 text-center">Executado (cm)</th>
+                                                <th className="p-3 text-center">Share Indiv.</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-200">
+                                            {config.products.map((prod, idx) => {
+                                                const val = parseFloat(productValues[prod]) || 0;
+                                                const share = worldCm > 0 ? ((val / worldCm) * 100).toFixed(1) : 0;
+                                                return (
+                                                    <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                                        <td className="p-3 font-medium">{prod}</td>
+                                                        <td className="p-3 text-center">{val} cm</td>
+                                                        <td className="p-3 text-center font-bold text-gray-500">{share}%</td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                        <tfoot className="bg-gray-50 font-bold border-t border-gray-300">
+                                            <tr>
+                                                <td className="p-3 text-right text-gray-500">TOTAL MUNDO: {worldCm}cm</td>
+                                                <td className="p-3 text-center text-gray-800">{catTotalHnk} cm</td>
+                                                <td className={`p-3 text-center ${isMet ? 'text-[#008200] bg-green-50' : 'text-red-600 bg-red-50'}`}>
+                                                    {isMet ? 'META OK' : 'GAP'}
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            );
+                        })}
+
+                        <div className="bg-gray-800 text-white p-6 flex justify-between items-center border-t-8 border-[#008200]">
+                            <div>
+                                <p className="text-sm text-gray-400 uppercase">Resultado Consolidado</p>
+                                <p className="font-bold text-2xl">SHARE CERVEJA</p>
+                            </div>
+                            <div className="text-right">
+                                <span className="text-5xl font-bold">{globalData.share}%</span>
+                                <p className="text-sm text-gray-400 mt-1">Total HNK: {globalData.hnk}cm / Total Mundo: {globalData.world}cm</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [allData, setAllData] = useState(() => {
+                const initial = {};
+                Object.keys(CATEGORIES).forEach(key => initial[key] = { world: '', products: {} });
+                return initial;
             });
-            lucide.createIcons();
-        }
+            
+            const [storeName, setStoreName] = useState('');
+            const [fds, setFds] = useState('');
 
-        function deleteItem(id) {
-            history = history.filter(item => item.id !== id);
-            saveHistoryToStorage();
-            renderHistory();
-        }
+            const reportRef = useRef(null);
+            const [isCapturing, setIsCapturing] = useState(false);
 
-        function clearHistory() {
-            if (confirm('Limpar todo o histórico?')) {
-                history = [];
-                saveHistoryToStorage();
-                renderHistory();
-                showNotification('Histórico limpo.', 'success');
-            }
-        }
-
-        // --- EXPORTAÇÃO ---
-        function downloadCSV() {
-            if (history.length === 0) return;
-
-            let csvContent = "Data;Hora;Loja;Share Total (%);";
-            Object.keys(categoriesConfig).forEach(key => {
-                const label = categoriesConfig[key].label;
-                csvContent += `${label} HEINEKEN (cm);${label} CONC (cm);${label} SHARE (%);Metas Batida?;;`;
-            });
-            csvContent += "\n";
-
-            history.forEach(item => {
-                let row = `${item.date};${item.time};${item.storeName};${item.totalShare.toString().replace('.', ',')};`;
-                Object.keys(categoriesConfig).forEach(key => {
-                    const catData = item.data[key];
-                    row += `${catData.heinekenCm};${catData.competitorCm};${catData.share.toString().replace('.', ',')};${catData.metaReached ? 'SIM' : 'NAO'};`;
-                });
-                csvContent += row + "\n";
-            });
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.setAttribute('href', url);
-            link.setAttribute('download', `Fotografia_Sucesso_MixCompleto_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        // --- UTILITÁRIOS ---
-        function showNotification(msg, type) {
-            const notif = document.getElementById('notification');
-            notif.textContent = msg;
-            notif.className = `mb-4 p-3 rounded-lg text-sm text-center font-medium shadow-sm border fade-in ${type === 'error' ? 'bg-red-100 text-red-700 border-red-200' : 'bg-green-100 text-green-700 border-green-200'}`;
-            notif.classList.remove('hidden');
-            setTimeout(() => {
-                notif.classList.add('hidden');
-            }, 3000);
-        }
-
-        function saveHistoryToStorage() {
-            localStorage.setItem('heineken_sos_history', JSON.stringify(history));
-        }
-
-        function loadHistoryFromStorage() {
-            const stored = localStorage.getItem('heineken_sos_history');
-            if (stored) {
-                try {
-                    history = JSON.parse(stored);
-                    renderHistory();
-                } catch (e) {
-                    console.error('Erro ao carregar histórico', e);
-                }
-            }
-        }
-
-        // --- RASCUNHO (DRAFT) ---
-        function saveDraft() {
-            const draft = {
-                storeName: document.getElementById('storeName').value,
-                measurements: measurements,
-                timestamp: Date.now()
+            const handleUpdateWorld = (catKey, val) => {
+                setAllData(prev => ({
+                    ...prev,
+                    [catKey]: { ...prev[catKey], world: val }
+                }));
             };
-            localStorage.setItem('heineken_sos_draft', JSON.stringify(draft));
-        }
 
-        function loadDraft() {
-            const stored = localStorage.getItem('heineken_sos_draft');
-            if (stored) {
-                try {
-                    const draft = JSON.parse(stored);
-                    // Validar se não é muito antigo (opcional, aqui vamos manter sempre)
-                    document.getElementById('storeName').value = draft.storeName || '';
-                    if (draft.measurements) {
-                        measurements = draft.measurements;
+            const handleUpdateProduct = (catKey, prodName, val) => {
+                setAllData(prev => ({
+                    ...prev,
+                    [catKey]: {
+                        ...prev[catKey],
+                        products: { ...prev[catKey].products, [prodName]: val }
                     }
-                    showNotification('Rascunho restaurado.', 'success');
-                } catch (e) {
-                    console.error('Erro ao carregar rascunho', e);
-                }
-            }
-        }
+                }));
+            };
 
-        function resetDraft() {
-            if(confirm('Deseja limpar os dados atuais do formulário?')) {
-                document.getElementById('storeName').value = '';
-                Object.keys(measurements).forEach(k => measurements[k] = { heineken: '', competitor: '' });
-                localStorage.removeItem('heineken_sos_draft');
-                switchTab('premium');
-                updateGlobalTotal();
-                showNotification('Formulário limpo.', 'success');
-            }
-        }
+            const handleReset = () => {
+                if(window.confirm("Deseja limpar todos os dados inseridos?")) {
+                    const reset = {};
+                    Object.keys(CATEGORIES).forEach(key => reset[key] = { world: '', products: {} });
+                    setAllData(reset);
+                    setStoreName('');
+                    setFds('');
+                }
+            };
+
+            const handleDownloadPDF = async () => {
+                if (!window.html2canvas || !window.jspdf) {
+                    alert("As ferramentas de captura ainda estão carregando. Tente novamente em alguns segundos.");
+                    return;
+                }
+                
+                setIsCapturing(true);
+                try {
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    
+                    const canvas = await window.html2canvas(reportRef.current, {
+                        scale: 2,
+                        backgroundColor: "#ffffff",
+                        logging: false,
+                        useCORS: true
+                    });
+                    
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new window.jspdf.jsPDF({
+                        orientation: 'portrait',
+                        unit: 'mm',
+                        format: 'a4'
+                    });
+
+                    const imgProps = pdf.getImageProperties(imgData);
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = pdf.internal.pageSize.getHeight();
+                    
+                    const imgWidth = imgProps.width;
+                    const imgHeight = imgProps.height;
+                    
+                    const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+                    
+                    const imgX = (pdfWidth - imgWidth * ratio) / 2;
+                    const imgY = 0; // Top align
+
+                    pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+                    
+                    const dateStr = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+                    pdf.save(`RELATORIO_SOVI_HEINEKEN_${dateStr}.pdf`);
+                } catch (err) {
+                    console.error(err);
+                    alert("Erro ao gerar PDF. Tente novamente.");
+                } finally {
+                    setIsCapturing(false);
+                }
+            };
+
+            const handleDownloadPNG = async () => {
+                if (!window.html2canvas) {
+                    alert("As ferramentas de captura ainda estão carregando. Tente novamente em alguns segundos.");
+                    return;
+                }
+                
+                setIsCapturing(true);
+                try {
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    
+                    const canvas = await window.html2canvas(reportRef.current, {
+                        scale: 2,
+                        backgroundColor: "#ffffff",
+                        logging: false,
+                        useCORS: true
+                    });
+                    
+                    const link = document.createElement('a');
+                    link.download = `RELATORIO_SOVI_HEINEKEN_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                } catch (err) {
+                    console.error(err);
+                    alert("Erro ao gerar imagem. Tente novamente.");
+                } finally {
+                    setIsCapturing(false);
+                }
+            };
+
+            const calculateGlobalShare = () => {
+                let totalHnk = 0;
+                let totalWorld = 0;
+
+                Object.entries(allData).forEach(([key, data]) => {
+                    if (key === 'nab' || key === 'rtd') return;
+
+                    const worldCm = parseFloat(data.world) || 0;
+                    totalWorld += worldCm;
+                    
+                    const config = CATEGORIES[key];
+                    config.products.forEach(prod => {
+                        totalHnk += (parseFloat(data.products[prod]) || 0);
+                    });
+                });
+
+                const share = totalWorld > 0 ? ((totalHnk / totalWorld) * 100).toFixed(1) : '0.0';
+                return { share, hnk: totalHnk, world: totalWorld };
+            };
+
+            const globalData = calculateGlobalShare();
+
+            return (
+                <div className="min-h-screen pb-20 font-sans text-gray-800">
+                    <header className="bg-[#008200] text-white p-4 shadow-lg sticky top-0 z-50">
+                        <div className="max-w-md mx-auto flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                                <Star className="fill-current text-red-500" />
+                                <h1 className="text-xl font-bold tracking-tighter">SOVI CALC</h1>
+                                <span className="text-[10px] text-white/80 ml-1 font-normal">Desenvolvido por: Pedro Lameirão</span>
+                            </div>
+                            <button onClick={handleReset} className="text-white/80 hover:text-white transition-colors">
+                                <RefreshCw size={20} />
+                            </button>
+                        </div>
+                    </header>
+
+                    <main className="max-w-md mx-auto p-4">
+                        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6">
+                            <h2 className="text-sm font-bold text-gray-400 uppercase mb-3">Dados da Loja</h2>
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1">NOME DA LOJA</label>
+                                    <input 
+                                        type="text" 
+                                        value={storeName}
+                                        onChange={(e) => setStoreName(e.target.value)}
+                                        className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-[#008200] transition-all"
+                                        placeholder="EX: Supermercado Pão de Mel"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1">FDS DA LOJA</label>
+                                    <input 
+                                        type="text" 
+                                        value={fds}
+                                        onChange={(e) => setFds(e.target.value)}
+                                        className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-[#008200] transition-all"
+                                        placeholder="Pontuação da Fotografia de Sucesso"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {Object.entries(CATEGORIES).map(([key, config]) => (
+                            <CategorySection 
+                                key={key}
+                                categoryKey={key}
+                                config={config}
+                                values={allData[key]}
+                                onUpdateWorld={(val) => handleUpdateWorld(key, val)}
+                                onUpdateProduct={(prod, val) => handleUpdateProduct(key, prod, val)}
+                            />
+                        ))}
+
+                        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-40">
+                            <div className="max-w-md mx-auto flex gap-3">
+                                <div className="flex-1">
+                                    <p className="text-xs text-gray-500 font-bold uppercase">Share Cerveja</p>
+                                    <p className="text-3xl font-bold text-[#008200]">{globalData.share}%</p>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm font-bold text-gray-500">
+                                    Baixe o seu relatório <ArrowRight size={16} />
+                                </div>
+                                <div className="flex gap-2">
+                                    <button 
+                                        onClick={handleDownloadPDF}
+                                        disabled={isCapturing}
+                                        className="bg-[#008200] text-white px-4 py-2 rounded-lg font-bold shadow-lg active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center justify-center text-xs"
+                                    >
+                                        <span>{isCapturing ? '...' : 'PDF'}</span>
+                                    </button>
+                                    <button 
+                                        onClick={handleDownloadPNG}
+                                        disabled={isCapturing}
+                                        className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold shadow-lg active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center justify-center text-xs"
+                                    >
+                                        <span>{isCapturing ? '...' : 'PNG'}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+
+                    {/* Hidden Report for Capture */}
+                    <div className="fixed top-0 left-0 -z-50 opacity-0 pointer-events-none">
+                        <div ref={reportRef}>
+                            <ReportTable 
+                                allData={allData} 
+                                globalData={globalData}
+                                date={new Date().toLocaleDateString('pt-BR')}
+                                time={new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}
+                                storeName={storeName}
+                                fds={fds}
+                            />
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>

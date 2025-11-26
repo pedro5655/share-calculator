@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -106,7 +106,7 @@
             </IconBase>
         );
 
-        // --- DADOS E LÓGICA ---
+        // --- DADOS E LÃ“GICA ---
         const CATEGORIES = {
             premium: {
                 title: "Premium",
@@ -184,6 +184,27 @@
                 ]
             }
         };
+        
+        const CategoryTabs = ({ categories, activeCategory, onSelect }) => {
+            return (
+                <div className="flex overflow-x-auto gap-2 p-1 mb-4 pb-2">
+                    {Object.entries(categories).map(([key, config]) => (
+                        <button
+                            key={key}
+                            onClick={() => onSelect(key)}
+                            className={`
+                                whitespace-nowrap px-4 py-2 rounded-full text-sm font-bold transition-all shadow-sm border
+                                ${activeCategory === key 
+                                    ? `${config.headerColor} border-transparent scale-105 ring-2 ring-offset-1 ring-gray-200` 
+                                    : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'}
+                            `}
+                        >
+                            {config.title}
+                        </button>
+                    ))}
+                </div>
+            );
+        };
 
         const ProductInput = ({ name, value, onChange, share, totalShelf }) => {
             return (
@@ -208,8 +229,13 @@
             );
         };
 
-        const CategorySection = ({ categoryKey, config, values, onUpdateWorld, onUpdateProduct }) => {
+        const CategorySection = ({ categoryKey, config, values, onUpdateWorld, onUpdateProduct, isTabbed }) => {
             const [isOpen, setIsOpen] = useState(true);
+
+            // Se estiver em modo abas, forçar aberto quando montar ou mudar
+            useEffect(() => {
+                if (isTabbed) setIsOpen(true);
+            }, [isTabbed, categoryKey]);
 
             const worldCm = values.world;
             const productValues = values.products;
@@ -226,8 +252,8 @@
             return (
                 <div className="mb-6 bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
                     <div 
-                        className="bg-[#008200] p-4 flex justify-between items-center text-white cursor-pointer"
-                        onClick={() => setIsOpen(!isOpen)}
+                        className={`p-4 flex justify-between items-center text-white transition-colors ${config.headerColor} ${isTabbed ? '' : 'cursor-pointer'}`}
+                        onClick={() => !isTabbed && setIsOpen(!isOpen)}
                     >
                         <div className="flex items-center gap-2">
                             <Star className="w-5 h-5 text-red-500 fill-current" />
@@ -239,7 +265,7 @@
                                     META: {config.target}%
                                 </span>
                             )}
-                            {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                            {isOpen ? (isTabbed ? null : <ChevronUp size={20} />) : <ChevronDown size={20} />}
                         </div>
                     </div>
 
@@ -424,6 +450,7 @@
             
             const [storeName, setStoreName] = useState('');
             const [fds, setFds] = useState('');
+            const [activeCategory, setActiveCategory] = useState('premium');
 
             const reportRef = useRef(null);
             const [isCapturing, setIsCapturing] = useState(false);
@@ -457,7 +484,7 @@
 
             const handleDownloadPDF = async () => {
                 if (!window.html2canvas || !window.jspdf) {
-                    alert("As ferramentas de captura ainda estão carregando. Tente novamente em alguns segundos.");
+                    alert("As ferramentas de captura ainda estÃ£o carregando. Tente novamente em alguns segundos.");
                     return;
                 }
                 
@@ -505,7 +532,7 @@
 
             const handleDownloadPNG = async () => {
                 if (!window.html2canvas) {
-                    alert("As ferramentas de captura ainda estão carregando. Tente novamente em alguns segundos.");
+                    alert("As ferramentas de captura ainda estÃ£o carregando. Tente novamente em alguns segundos.");
                     return;
                 }
                 
@@ -596,16 +623,28 @@
                             </div>
                         </div>
 
-                        {Object.entries(CATEGORIES).map(([key, config]) => (
-                            <CategorySection 
-                                key={key}
-                                categoryKey={key}
-                                config={config}
-                                values={allData[key]}
-                                onUpdateWorld={(val) => handleUpdateWorld(key, val)}
-                                onUpdateProduct={(prod, val) => handleUpdateProduct(key, prod, val)}
-                            />
-                        ))}
+                        <CategoryTabs 
+                            categories={CATEGORIES} 
+                            activeCategory={activeCategory} 
+                            onSelect={setActiveCategory} 
+                        />
+
+                        <div className="min-h-[300px]">
+                            {Object.entries(CATEGORIES).map(([key, config]) => {
+                                if (key !== activeCategory) return null;
+                                return (
+                                    <CategorySection 
+                                        key={key}
+                                        categoryKey={key}
+                                        config={config}
+                                        values={allData[key]}
+                                        onUpdateWorld={(val) => handleUpdateWorld(key, val)}
+                                        onUpdateProduct={(prod, val) => handleUpdateProduct(key, prod, val)}
+                                        isTabbed={true}
+                                    />
+                                );
+                            })}
+                        </div>
 
                         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-40">
                             <div className="max-w-md mx-auto flex gap-3">
